@@ -381,6 +381,40 @@ body {
 .btn-cancel { background: transparent; color: var(--gold); }
 .btn-cancel:active { background: rgba(232,215,106,0.15); }
 
+/* SUBMIT BUTTON */
+.submit-wrap {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.btn-submit {
+  font-family: 'SaintRegus', 'Arial Narrow', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1.5px solid var(--gold);
+  padding: 12px 28px;
+  cursor: pointer;
+  border-radius: 0;
+  -webkit-appearance: none;
+  background: var(--gold);
+  color: #2a1a0e;
+  transition: background 0.1s, color 0.1s;
+}
+.btn-submit:active { background: #fff; border-color: #fff; }
+.submit-status {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  min-height: 14px;
+  text-align: center;
+}
+
 /* BINGO TOAST */
 .bingo-toast {
   position: fixed;
@@ -438,6 +472,11 @@ body {
 
   <div class="bottom-section">
     <img src="under bingo logo.svg" alt="" class="logo-bottom">
+  </div>
+
+  <div class="submit-wrap">
+    <button class="btn-submit" id="btnSubmit">SUBMIT MY CARD</button>
+    <div class="submit-status" id="submitStatus"></div>
   </div>
 </div>
 
@@ -664,6 +703,57 @@ window.addEventListener('resize',()=>{
     delete lineGroups[li];
   });
   renderStrikes();
+});
+
+// ── SUBMIT ──────────────────────────────────────────────
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxp_vUAgBXPodpI0vK1RnELFf-iinK2FYVLVeirI7Fmh2Ncu1by5-hhaFxw7P9pE3md/exec';
+
+document.getElementById('btnSubmit').addEventListener('click', async () => {
+  const playerName = document.querySelector('.name-input').value.trim();
+  if (!playerName) {
+    document.getElementById('submitStatus').textContent = 'Please enter your name first!';
+    return;
+  }
+
+  const checkedSquares = [];
+  squares.forEach((text, i) => {
+    if (i === 12) return; // skip free space
+    const s = state[i];
+    if (s.checked) {
+      checkedSquares.push({
+        square: text,
+        names: s.names
+      });
+    }
+  });
+
+  const payload = {
+    playerName,
+    checkedCount: checkedSquares.length,
+    squares: checkedSquares,
+    submittedAt: new Date().toISOString()
+  };
+
+  const statusEl = document.getElementById('submitStatus');
+  const btn = document.getElementById('btnSubmit');
+  statusEl.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    statusEl.textContent = '✓ Card submitted! Thanks for playing.';
+    btn.textContent = 'SUBMITTED ✓';
+    btn.style.background = 'transparent';
+    btn.style.color = 'var(--gold)';
+  } catch (err) {
+    statusEl.textContent = 'Something went wrong. Try again.';
+    btn.disabled = false;
+  }
 });
 
 buildGrid();
