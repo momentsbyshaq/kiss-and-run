@@ -234,7 +234,7 @@ body {
 
 .free-cell {
   cursor: default;
-  background: var(--free-bg) !important;
+  background: var(---bg) !important;
 }
 .free-cell:active { background: var(--free-bg) !important; }
 .free-inner {
@@ -513,7 +513,6 @@ function buildGrid(){
       lbl.className='free-label';
       lbl.textContent='FREE SPACE';
       const lampImg=document.createElement('img');
-      lampImg.src='middle logo.svg';
       lampImg.alt='';
       lampImg.className='logo-free';
       inner.appendChild(lbl);inner.appendChild(lampImg);
